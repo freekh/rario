@@ -10,7 +10,7 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
-    rotation: f64   // Rotation for the square.
+    dim: (u32, u32)
 }
 
 impl App {
@@ -18,41 +18,39 @@ impl App {
         use graphics::*;
 
         const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
-        const RED:   [f32; 4] = [1.0, 0.0, 0.0, 1.0];
         const BLUE:  [f32; 4] = [0.0, 0.0, 1.0, 1.0];
-
-        let square = rectangle::square(0.0, 0.0, 50.0);
-        let rotation = self.rotation;
-        let (x, y) = ((args.width / 2) as f64, (args.height / 2) as f64);
+        let (width, height) = self.dim;
+        let ground = rectangle::centered([0.0, height as f64, (width as f64), 100.0]);
+        //let (x, y) = ((args.width / 2) as f64, (args.height / 2) as f64);
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
             clear(BLUE, gl);
 
-            let transform = c.transform.trans(x, y)
-                                       .rot_rad(rotation)
-                                       .trans(-25.0, -25.0);
+            let transform: [[f64; 3]; 2] = c.transform.trans(0.0, 0.0);
+
 
             // Draw a box rotating around the middle of the screen.
-            rectangle(RED, square, transform, gl);
+            rectangle(GREEN, ground, transform, gl);
         });
     }
 
     fn update(&mut self, args: &UpdateArgs) {
-        // Rotate 2 radians per second.
-        self.rotation += 2.0 * args.dt;
+        
     }
 }
 
 fn main() {
     let opengl = OpenGL::_3_2;
+    let width = 600 as u32;
+    let height = 400 as u32;
 
     // Create an Glutin window.
     let window = Window::new(
         opengl,
         WindowSettings::new(
-            "spinning-square",
-            [200, 200]
+            "rario",
+            [width, height]
         )
         .exit_on_esc(true)
     );
@@ -60,7 +58,7 @@ fn main() {
     // Create a new game and run it.
     let mut app = App {
         gl: GlGraphics::new(opengl),
-        rotation: 0.0
+        dim: (width, height)
     };
 
     for e in window.events() {
