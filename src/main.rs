@@ -1,46 +1,75 @@
-extern crate gl;
-extern crate glutin;
-extern crate libc;
+extern crate piston;
+extern crate graphics;
+extern crate glutin_window;
+extern crate opengl_graphics;
 
-use glutin::{Event, ElementState, MouseCursor};
+use piston::window::WindowSettings;
+use piston::event::*;
+use glutin_window::GlutinWindow as Window;
+use opengl_graphics::{ GlGraphics, OpenGL };
 
-fn main() {
-	let window = glutin::Window::new().unwrap();
-	window.set_title("Glutin Test");
+pub struct App {
+    gl: GlGraphics, // OpenGL drawing backend.
+    rotation: f64   // Rotation for the square.
+}
 
-    unsafe {
-    	window.make_current()
-    		.ok()
-    		.expect("Window.make_current() failed :(");
+impl App {
+    fn render(&mut self, args: &RenderArgs) {
+        use graphics::*;
 
-        gl::load_with(|symbol| window.get_proc_address(symbol));
-        gl::ClearColor(0.25, 0.25, 0.25, 1.0);
+        const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
+        const RED:   [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+        const BLUE:  [f32; 4] = [0.0, 0.0, 1.0, 1.0];
+
+        let square = rectangle::square(0.0, 0.0, 50.0);
+        let rotation = self.rotation;
+        let (x, y) = ((args.width / 2) as f64, (args.height / 2) as f64);
+
+        self.gl.draw(args.viewport(), |c, gl| {
+            // Clear the screen.
+            clear(BLUE, gl);
+
+            let transform = c.transform.trans(x, y)
+                                       .rot_rad(rotation)
+                                       .trans(-25.0, -25.0);
+
+            // Draw a box rotating around the middle of the screen.
+            rectangle(RED, square, transform, gl);
+        });
     }
 
-    let cursors = [MouseCursor::Default, MouseCursor::Crosshair, MouseCursor::Hand, MouseCursor::Arrow, MouseCursor::Move, MouseCursor::Text, MouseCursor::Wait, MouseCursor::Help, MouseCursor::Progress, MouseCursor::NotAllowed, MouseCursor::ContextMenu, MouseCursor::NoneCursor, MouseCursor::Cell, MouseCursor::VerticalText, MouseCursor::Alias, MouseCursor::Copy, MouseCursor::NoDrop, MouseCursor::Grab, MouseCursor::Grabbing, MouseCursor::AllScroll, MouseCursor::ZoomIn, MouseCursor::ZoomOut, MouseCursor::EResize, MouseCursor::NResize, MouseCursor::NeResize, MouseCursor::NwResize, MouseCursor::SResize, MouseCursor::SeResize, MouseCursor::SwResize, MouseCursor::WResize, MouseCursor::EwResize, MouseCursor::NsResize, MouseCursor::NeswResize, MouseCursor::NwseResize, MouseCursor::ColResize, MouseCursor::RowResize];
-    let mut cursor_idx = 0;
+    fn update(&mut self, args: &UpdateArgs) {
+        // Rotate 2 radians per second.
+        self.rotation += 2.0 * args.dt;
+    }
+}
 
-    for event in window.wait_events() {
-        unsafe {
-        	gl::Clear(gl::COLOR_BUFFER_BIT);
-        };
+fn main() {
+    let opengl = OpenGL::_3_2;
 
-        window.swap_buffers()
-        	.ok()
-    		.expect("Window.swap_buffers() failed :(");
-    	
+    // Create an Glutin window.
+    let window = Window::new(
+        opengl,
+        WindowSettings::new(
+            "spinning-square",
+            [200, 200]
+        )
+        .exit_on_esc(true)
+    );
 
-        match event {
-        	a @ Event::KeyboardInput(_, _, _) => {
-                println!("{:?}", a);
-            },
+    // Create a new game and run it.
+    let mut app = App {
+        gl: GlGraphics::new(opengl),
+        rotation: 0.0
+    };
 
-            a @ Event::MouseMoved(_) => {
-                // println!("{:?}", a);
-            },
+    for e in window.events() {
+        if let Some(r) = e.render_args() {
+            app.render(&r);
+        }
 
-            Event::Closed => break,
-            _ => ()
+        if let Some(u) = e.update_args() {
+            app.update(&u);
         }
     }
 }

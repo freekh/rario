@@ -1,9 +1,17 @@
 [package]
-name = "glutin_test"
+
+name = "getting-started-spinning-square"
 version = "0.1.0"
-authors = ["Simon Olander Sahlén <simon.olander@gmail.com>"]
+authors = [
+    "TyOverby <ty@pre-alpha.com>",
+    "Nikita Pekin <contact@nikitapek.in>"
+]
+
+[[bin]]
+name = "spinning-square"
 
 [dependencies]
-gl = "*"
-libc = "*"
-glutin = "0.2.2"
+piston = "0.1.4"
+piston2d-graphics = "0.1.4"
+pistoncore-glutin_window = "0.1.0"
+piston2d-opengl_graphics = "0.1.0"
