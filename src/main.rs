@@ -6,7 +6,8 @@ extern crate opengl_graphics;
 use piston::window::WindowSettings;
 use piston::event::*;
 use glutin_window::GlutinWindow as Window;
-use opengl_graphics::{ GlGraphics, OpenGL };
+use opengl_graphics::{ GlGraphics, OpenGL, Texture };
+use std::path::Path;
 
 pub struct App {
     gl: GlGraphics, // OpenGL drawing backend.
@@ -22,6 +23,8 @@ impl App {
         let (width, height) = self.dim;
         let ground = rectangle::centered([0.0, height as f64, (width as f64), 100.0]);
         //let (x, y) = ((args.width / 2) as f64, (args.height / 2) as f64);
+        let image   = Image::new().rect(rectangle::centered([0.0, 0.0, 100.0, 200.0]));
+        let texture = Texture::from_path(Path::new("sprites/person.png")).unwrap();
 
         self.gl.draw(args.viewport(), |c, gl| {
             // Clear the screen.
@@ -32,6 +35,7 @@ impl App {
 
             // Draw a box rotating around the middle of the screen.
             rectangle(GREEN, ground, transform, gl);
+            image.draw(&texture, default_draw_state(), c.transform, gl);
         });
     }
 
