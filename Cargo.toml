@@ -1,0 +1,9 @@
+[package]
+name = "glutin_test"
+version = "0.1.0"
+authors = ["Simon Olander Sahlén <simon.olander@gmail.com>"]
+
+[dependencies]
+gl = "*"
+libc = "*"
+glutin = "0.2.2"
